@@ -1,11 +1,17 @@
-<script setup></script>
+<script setup>
+import { computed } from 'vue'
+import { RouterView,useRoute } from 'vue-router'
+import ToolBar from '@/components/ToolBar.vue'
+const route = useRoute()
+const showToolBar = computed(() => route.name !== 'Login')
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+<ToolBar v-if="showToolBar"></ToolBar>
+  <RouterView>
+
+  </RouterView>
+
 </template>
 
 <style scoped></style>
