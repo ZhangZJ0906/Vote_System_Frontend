@@ -1,28 +1,32 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem('token') || '')
-  const role  = ref(localStorage.getItem('role')  || '')
+  const role = ref(localStorage.getItem('role') || '')
   const username = ref(localStorage.getItem('username') || '')
+  const userId = ref(localStorage.getItem('id') || '')
+  const isLoggedIn = computed(() => !!username.value)
 
   function setAuth(data) {
-    token.value    = data.token
-    role.value     = data.role
+    userId.value = data.id
+    role.value = data.role || 'user'
     username.value = data.username
-    localStorage.setItem('token',    data.token)
-    localStorage.setItem('role',     data.role)
+
+    localStorage.setItem('role', role.value)
+    localStorage.setItem('id', data.id)
     localStorage.setItem('username', data.username)
   }
 
+  // 登出時清空資料
   function clearAuth() {
-    token.value    = ''
-    role.value     = ''
+    role.value = ''
     username.value = ''
-    localStorage.removeItem('token')
+    userId.value = ''
     localStorage.removeItem('role')
     localStorage.removeItem('username')
+    localStorage.removeItem('id')
+    localStorage.removeItem('user')
   }
 
-  return { token, role, username, setAuth, clearAuth }
+  return { userId, role, username, isLoggedIn, setAuth, clearAuth }
 })

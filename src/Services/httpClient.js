@@ -21,20 +21,24 @@ httpClient.interceptors.request.use(
   },
 )
 export function useHttpClient() {
-  const getApi = (url, config = {}) => {
-    return httpClient.get(url, config).then((res) => res.data)
+  const getApi = async (url, config = {}) => {
+    const res = await httpClient.get(url, config)
+    return res.data
   }
 
-  const postApi = (url, data = {}, config = {}) => {
-    return httpClient.post(url, data, config).then((res) => res.data)
+  const postApi = async (url, data = {}, config = {}) => {
+    const res = await httpClient.post(url, data, config)
+    return res.data
   }
 
-  const putApi = (url, data = {}, config = {}) => {
-    return httpClient.put(url, data, config).then((res) => res.data)
+  const putApi = async (url, data = {}, config = {}) => {
+    const res = await httpClient.put(url, data, config)
+    return res.data
   }
 
-  const deleteApi = (url, config = {}) => {
-    return httpClient.delete(url, config).then((res) => res.data)
+  const deleteApi = async (url, config = {}) => {
+    const res = await httpClient.delete(url, config)
+    return res.data
   }
 
   return {

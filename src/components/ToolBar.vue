@@ -20,7 +20,7 @@
               ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
               : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
           ]">
-            {{ userRole }}
+            {{ username }}
           </span>
 
           <button @click="handleLogout"
@@ -46,8 +46,8 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 // 使用 computed 響應式監聽登入狀態與角色 (對應路由守衛變數)
-const isLoggedIn = computed(() => !!authStore.token)
-const userRole = computed(() => authStore.role)
+const isLoggedIn = computed(() => !!authStore.isLoggedIn)
+const username = computed(() => authStore.username)
 
 // 登出點擊事件
 const handleLogout = () => {

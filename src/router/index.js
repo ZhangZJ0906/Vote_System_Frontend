@@ -5,15 +5,15 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/frontend/views/HomePage.vue'),
+    component: () => import('@/frontend/views/LoginPage.vue'),
     meta: { requiresGuest: true }
   },
-  // {
-  //   path: '/vote',
-  //   name: 'Vote',
-  //   component: () => import('@/views/VoteView.vue'),
-  //   meta: { requiresAuth: true, role: 'user' }
-  // },
+  {
+    path: '/vote',
+    name: 'Vote',
+    component: () => import('@/frontend/views/UserVote.vue'),
+    meta: { requiresAuth: true, role: 'user' }
+  },
   // {
   //   path: '/admin',
   //   meta: { requiresAuth: true, role: 'admin' },
@@ -48,26 +48,24 @@ const router = createRouter({
 // 擋住梅登入的
 router.beforeEach((to, from) => {
   const authStore = useAuthStore()
-  const isLoggedIn = !!authStore.token
+
+  // 💡 直接讀取 store 裡面的 computed 屬性
+  const isLoggedIn = authStore.isLoggedIn
   const userRole = authStore.role
 
+  console.log('路由檢查：', { to: to.path, isLoggedIn, userRole })
 
   if (to.meta.requiresGuest && isLoggedIn) {
-
     return userRole === 'admin' ? '/admin/items' : '/vote'
   }
 
-
   if (to.meta.requiresAuth && !isLoggedIn) {
-
     return '/login'
   }
-
 
   if (to.meta.role && to.meta.role !== userRole) {
     return userRole === 'admin' ? '/admin/items' : '/vote'
   }
-
 
   return true
 })
