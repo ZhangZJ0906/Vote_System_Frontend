@@ -1,38 +1,104 @@
 <template>
-  <div class="vote-container">
-    <h2>📊 參與投票</h2>
+  <div class="min-h-screen bg-slate-100 p-6">
+    <div class="max-w-2xl mx-auto">
 
-    <div v-if="loading" class="loading-status">資料載入中...</div>
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-black text-slate-800">參與投票</h2>
+        <p class="text-sm text-slate-400 mt-1">請選擇您支持的選項後送出</p>
+      </div>
 
-    <div v-else-if="voteQuestions.length > 0">
-      <div v-for="question in voteQuestions" :key="question.id" class="question-card"
-        :class="{ 'voted-card': hasVotedQuestion(question.id) }">
-        <h3>{{ question.title }}</h3>
-        <p class="description">{{ question.description }}</p>
+      <div v-if="loading" class="flex justify-center items-center py-20">
+        <div class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      </div>
 
-        <span v-if="hasVotedQuestion(question.id)" class="badge-voted">
-          ✓ 您已參與此投票
-        </span>
+      <div v-else-if="voteQuestions.length === 0"
+        class="text-center py-16 text-slate-400 bg-white rounded-2xl shadow border border-slate-200">
+        <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+        </svg>
+        <p class="text-sm">目前沒有開放的投票項目</p>
+      </div>
 
-        <div class="items-list">
-          <div v-for="item in question.items" :key="item.id" class="item-option">
-            <label :class="{ 'disabled-label': hasVotedQuestion(question.id) }">
-              <input type="checkbox" :value="item.id" :checked="isItemChecked(item.id)"
-                :disabled="hasVotedQuestion(question.id)" @change="toggleSelect(question.id, item.id)" />
-              <span class="item-name">{{ item.name }}</span>
-              <span class="vote-count">({{ item.voteCount }} 票)</span>
+      <div v-else class="space-y-5">
+        <div
+          v-for="question in voteQuestions"
+          :key="question.questionId"
+          class="bg-white rounded-2xl shadow-xl border transition-all duration-300"
+          :class="hasVotedQuestion(question.questionId) ? 'border-emerald-200' : 'border-slate-200'"
+        >
+          <!-- 題目 Header -->
+          <div class="px-6 pt-5 pb-4 border-b border-slate-100">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h3 class="text-base font-bold text-slate-800">{{ question.questionTitle }}</h3>
+                <p v-if="question.questionDescription" class="text-sm text-slate-400 mt-0.5">
+                  {{ question.questionDescription }}
+                </p>
+              </div>
+              <span v-if="hasVotedQuestion(question.questionId)"
+                class="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                </svg>
+                已投票
+              </span>
+            </div>
+          </div>
+
+          <!-- 選項 -->
+          <div class="px-6 py-4 space-y-2">
+            <label
+              v-for="item in question.items"
+              :key="item.itemId"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-150"
+              :class="[
+                hasVotedQuestion(question.questionId)
+                  ? 'cursor-not-allowed border-slate-100 bg-slate-50'
+                  : isItemSelected(question.questionId, item.itemId)
+                    ? 'cursor-pointer border-indigo-300 bg-indigo-50'
+                    : 'cursor-pointer border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/50'
+              ]"
+            >
+              <input
+                type="checkbox"
+                :value="item.itemId"
+                :checked="isItemChecked(item.itemId) || isItemSelected(question.questionId, item.itemId)"
+                :disabled="hasVotedQuestion(question.questionId)"
+                class="w-4 h-4 accent-indigo-600 shrink-0"
+                @change="toggleSelect(question.questionId, item.itemId)"
+              />
+              <span class="flex-1 text-sm font-medium"
+                :class="hasVotedQuestion(question.questionId) ? 'text-slate-400' : 'text-slate-700'">
+                {{ item.itemName }}
+              </span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
+                :class="hasVotedQuestion(question.questionId)
+                  ? 'bg-slate-100 text-slate-400'
+                  : 'bg-indigo-50 text-indigo-500'">
+                {{ item.voteCount ?? 0 }} 票
+              </span>
             </label>
           </div>
+
+          <!-- 送出按鈕 -->
+          <div class="px-6 pb-5">
+            <button
+              @click="submitVote(question.questionId)"
+              :disabled="hasVotedQuestion(question.questionId) || !selectedItems[question.questionId]?.length"
+              class="w-full py-3 rounded-xl font-bold text-sm transition-all duration-200"
+              :class="hasVotedQuestion(question.questionId) || !selectedItems[question.questionId]?.length
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md active:scale-95'"
+            >
+              {{ hasVotedQuestion(question.questionId) ? '已投票完成（無法重複投票）' : '確認送出投票' }}
+            </button>
+          </div>
+
         </div>
-
-        <button class="btn-submit" :disabled="hasVotedQuestion(question.id) || !selectedItems[question.id]?.length"
-          @click="submitVote(question.id)">
-          {{ hasVotedQuestion(question.id) ? '已投票完成' : '確認送出投票' }}
-        </button>
       </div>
-    </div>
 
-    <div v-else class="no-data">目前沒有開放的投票項目。</div>
+    </div>
   </div>
 </template>
 
@@ -42,255 +108,90 @@ import { voteApi } from '@/Services/VoteApi'
 import { useAuthStore } from '@/stores/auth'
 import Swal from 'sweetalert2'
 
-// 狀態管理
-const authStore = useAuthStore()
-// 安全取得目前登入者的 userId (支援 string 或 number 轉換)
-const currentUserId = computed(() => authStore.id || authStore.userId)
+const authStore     = useAuthStore()
+const currentUserId = computed(() => authStore.userId)
 
-const loading = ref(false)
-const voteQuestions = ref([])   // 重組後，給模板渲染的巢狀問卷清單
-const userHistory = ref([])     // 該使用者投過的紀錄清單 (由歷史 API 撈出)
-
-// 紀錄使用者目前在網頁上勾選的暫存狀態 (格式: { 題目ID: [選項ID, 選項ID, ...] })
+const loading       = ref(false)
+const voteQuestions = ref([])
+const userHistory   = ref([])
 const selectedItems = ref({})
 
-// 初始化載入資料
 const initData = async () => {
   loading.value = true
   try {
-    // 1. 獲取所有投票項目及累積票數 (後端回傳平鋪陣列)
     const listRes = await voteApi.getVoteList()
-
-    // 💡 關鍵修正 1：對應後端實體回傳的欄位是 .code 與 .list
-    if (listRes && listRes.code === 200 && listRes.list) {
-
-      // 💡 關鍵修正 2：將後端平鋪的選項資料，依據 question_id 分組重組成巢狀結構
-      const groupMap = {}
-
-      listRes.list.forEach(row => {
-        const qId = row.question_id
-
-        // 如果這個問卷大題還沒建立過，先初始化大題結構
-        if (!groupMap[qId]) {
-          groupMap[qId] = {
-            id: qId,
-            title: row.question_title,
-            description: row.question_description,
-            items: []
-          }
-        }
-
-        // 將該行選項塞入對應大題的 items 陣列中
-        groupMap[qId].items.push({
-          id: row.item_id,
-          name: row.item_name,
-          voteCount: row.vote_count || 0 // 對應後端 SQL 查出來的 vote_count
-        })
-      })
-
-      // 將 Map 物件轉回 Array 陣列，這時長度就會大於 0，順利觸發渲染！
-      voteQuestions.value = Object.values(groupMap)
+    if (listRes?.code === 200 && listRes.list) {
+      voteQuestions.value = listRes.list
     }
 
-    // 2. 如果使用者已登入，獲取其投票歷史紀錄
     if (currentUserId.value) {
       const historyRes = await voteApi.getVoteHistory(currentUserId.value)
-      if (historyRes && historyRes.code === 200) {
-        // 確保有拿到 list 陣列
+      if (historyRes?.code === 200) {
         userHistory.value = historyRes.list || []
       }
     }
   } catch (error) {
     console.error('資料載入失敗：', error)
-    Swal.fire('錯誤', '無法載入投票清單，請確認後端連線', 'error')
+    Swal.fire({ icon: 'error', title: '載入失敗', text: '無法載入投票清單，請確認後端連線', confirmButtonColor: '#4f46e5' })
   } finally {
     loading.value = false
   }
 }
 
-// 💡 關鍵修正 3：修正歷史紀錄判定欄位名稱 (確認型態一致)
-// 判斷這題大題目，使用者是不是已經投過了
-const hasVotedQuestion = (questionId) => {
-  return userHistory.value.some(history => Number(history.question_id) === Number(questionId))
-}
+// 該題是否投過（整題鎖定）
+const hasVotedQuestion = (questionId) =>
+  userHistory.value.some(h => Number(h.questionId) === Number(questionId))
 
-// 判斷某個特定選項，是不是在歷史紀錄裡被選過 (用來初始渲染打勾)
-const isItemChecked = (itemId) => {
-  return userHistory.value.some(history => Number(history.item_id) === Number(itemId))
-}
+// 某個 item 是否已投過（顯示勾選狀態用）
+const isItemChecked = (itemId) =>
+  userHistory.value.some(h =>
+    h.items?.some(i => Number(i.itemId) === Number(itemId))
+  )
 
-// 處理 Checkbox 勾選與取消勾選暫存
+// 某個 item 是否被新勾選（尚未送出）
+const isItemSelected = (questionId, itemId) =>
+  selectedItems.value[questionId]?.includes(itemId) ?? false
+
+// 切換勾選（已投過的題目不允許操作）
 const toggleSelect = (questionId, itemId) => {
-  if (!selectedItems.value[questionId]) {
-    selectedItems.value[questionId] = []
-  }
-
+  if (hasVotedQuestion(questionId)) return
+  if (!selectedItems.value[questionId]) selectedItems.value[questionId] = []
   const index = selectedItems.value[questionId].indexOf(itemId)
-  if (index > -1) {
-    selectedItems.value[questionId].splice(index, 1) // 取消勾選
-  } else {
-    selectedItems.value[questionId].push(itemId)    // 加入勾選
-  }
+  if (index > -1) selectedItems.value[questionId].splice(index, 1)
+  else selectedItems.value[questionId].push(itemId)
 }
 
-// 送出投票
 const submitVote = async (questionId) => {
+  if (hasVotedQuestion(questionId)) {
+    Swal.fire({ icon: 'warning', title: '已投票', text: '您已參與過此投票，無法重複投票！', confirmButtonColor: '#4f46e5' })
+    return
+  }
+
   const itemIds = selectedItems.value[questionId]
   if (!itemIds || itemIds.length === 0) return
 
   if (!currentUserId.value) {
-    Swal.fire('提示', '請先登入後再進行投票！', 'warning')
+    Swal.fire({ icon: 'warning', title: '請先登入', text: '登入後才能進行投票！', confirmButtonColor: '#4f46e5' })
     return
   }
 
-  // 組裝符合後端升級版 CastVoteDTO 的請求體
-  const payload = {
-    userId: Number(currentUserId.value),
-    itemIds: itemIds
-  }
-
   try {
-    const res = await voteApi.castVotes(payload)
-
-    // 💡 關鍵修正 4：成功響應改為檢查 .code
-    if (res && res.code === 200) {
-      Swal.fire('成功', '投票成功！感謝您的參與', 'success')
-
-      // 清空該題暫存的勾選資料
+    const res = await voteApi.castVotes({
+      userId: Number(currentUserId.value),
+      itemIds
+    })
+    if (res?.code === 200) {
+      await Swal.fire({ icon: 'success', title: '投票成功！', text: '感謝您的參與', timer: 1500, showConfirmButton: false })
       delete selectedItems.value[questionId]
-
-      // 重新整理資料，讓總票數實時更新，並鎖定已投票區塊
       await initData()
     } else {
-      Swal.fire('失敗', res.message || '投票失敗', 'error')
+      Swal.fire({ icon: 'error', title: '投票失敗', text: res.message || '請稍後再試', confirmButtonColor: '#4f46e5' })
     }
   } catch (error) {
     console.error('投票發生錯誤：', error)
-    Swal.fire('異常', '網路或系統異常，請稍後再試', 'error')
+    Swal.fire({ icon: 'error', title: '系統異常', text: '網路或系統異常，請稍後再試', confirmButtonColor: '#4f46e5' })
   }
 }
 
-onMounted(() => {
-  initData()
-})
+onMounted(initData)
 </script>
-
-<style scoped>
-.vote-container {
-  max-width: 650px;
-  margin: 30px auto;
-  padding: 20px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-}
-
-h2 {
-  text-align: center;
-  color: #333;
-  margin-bottom: 25px;
-}
-
-.loading-status,
-.no-data {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-  font-size: 1.1em;
-}
-
-.question-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 25px;
-  background: #ffffff;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.question-card h3 {
-  margin-top: 0;
-  color: #222;
-}
-
-.description {
-  color: #666;
-  font-size: 0.95em;
-  margin-bottom: 15px;
-}
-
-.voted-card {
-  background: #fcfdfd;
-  border-color: #b4e3db;
-}
-
-.badge-voted {
-  display: inline-block;
-  color: #1e7e78;
-  font-weight: bold;
-  font-size: 0.85em;
-  background: #e6f7f4;
-  padding: 5px 10px;
-  border-radius: 20px;
-  margin-bottom: 10px;
-}
-
-.items-list {
-  margin: 20px 0;
-}
-
-.item-option {
-  margin: 12px 0;
-}
-
-.item-option label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 4px 0;
-}
-
-.item-option input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  margin-right: 12px;
-}
-
-.item-name {
-  color: #333;
-  font-size: 1em;
-}
-
-.vote-count {
-  color: #999;
-  font-size: 0.9em;
-  margin-left: 8px;
-}
-
-.disabled-label {
-  cursor: not-allowed !important;
-  color: #888;
-}
-
-.btn-submit {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  font-size: 1em;
-  border-radius: 6px;
-  cursor: pointer;
-  width: 100%;
-  font-weight: bold;
-  transition: background-color 0.2s;
-}
-
-.btn-submit:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-.btn-submit:disabled {
-  background-color: #d6d6d6;
-  color: #8e8e8e;
-  cursor: not-allowed;
-}
-</style>

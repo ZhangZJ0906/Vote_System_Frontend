@@ -12,23 +12,13 @@ const routes = [
     path: '/vote',
     name: 'Vote',
     component: () => import('@/frontend/views/UserVote.vue'),
-    meta: { requiresAuth: true, role: 'user' }
+    meta: { requiresAuth: true, roles: ['user','admin'] }
   },
-  // {
-  //   path: '/admin',
-  //   meta: { requiresAuth: true, role: 'admin' },
-  //   children: [
-  //     {
-  //       path: '',
-  //       redirect: '/admin/items'
-  //     },
-  //     {
-  //       path: 'items',
-  //       name: 'AdminItems',
-  //       component: () => import('@/views/admin/ItemListView.vue')
-  //     }
-  //   ]
-  // },
+  {
+    path: '/admin',
+    meta: { requiresAuth: true, roles: 'admin' },
+    component:()=>import('@/backend/views/BackEndIndex.vue')
+  },
   {
     path: '/',
     redirect: '/login'
@@ -48,23 +38,23 @@ const router = createRouter({
 // 擋住梅登入的
 router.beforeEach((to, from) => {
   const authStore = useAuthStore()
-
-  // 💡 直接讀取 store 裡面的 computed 屬性
   const isLoggedIn = authStore.isLoggedIn
   const userRole = authStore.role
 
-  console.log('路由檢查：', { to: to.path, isLoggedIn, userRole })
-
+  // 1. 已登入的使用者想去登入頁 -> 依照角色重導向
   if (to.meta.requiresGuest && isLoggedIn) {
-    return userRole === 'admin' ? '/admin/items' : '/vote'
+    return userRole === 'admin' ? '/admin' : '/vote'
   }
 
+  // 未登入的使用者 -> 踢回登入頁
   if (to.meta.requiresAuth && !isLoggedIn) {
     return '/login'
   }
 
-  if (to.meta.role && to.meta.role !== userRole) {
-    return userRole === 'admin' ? '/admin/items' : '/vote'
+  // 3. 檢查角色權限
+  if (to.meta.roles && !to.meta.roles.includes(userRole)) {
+    // 如果角色不符合，被擋下來後要導向哪裡
+    return userRole === 'admin' ? '/admin' : '/vote'
   }
 
   return true
