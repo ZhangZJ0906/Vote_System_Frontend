@@ -23,14 +23,18 @@
           ]">
             {{ username }}
           </span>
-          <button
-            class="px-4 py-2 text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg border border-slate-700 hover:border-slate-600 active:scale-95 transition-all duration-200">
-            <RouterLink to="/vote">首頁</RouterLink>
-          </button>
-                    <button v-if="authStore.role=='admin'"
-            class="px-4 py-2 text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg border border-slate-700 hover:border-slate-600 active:scale-95 transition-all duration-200">
-            <RouterLink to="/admin">後台</RouterLink>
-          </button>
+          <RouterLink to="/vote">
+            <button
+              class="px-4 py-2 text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg border border-slate-700 hover:border-slate-600 active:scale-95 transition-all duration-200">
+              首頁
+            </button>
+          </RouterLink>
+          <RouterLink to="/admin">
+            <button v-if="authStore.role == 'admin'"
+              class="px-4 py-2 text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg border border-slate-700 hover:border-slate-600 active:scale-95 transition-all duration-200">
+              後台
+            </button>
+          </RouterLink>
           <button @click="handleLogout"
             class="px-4 py-2 text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg border border-slate-700 hover:border-slate-600 active:scale-95 transition-all duration-200">
             登出
