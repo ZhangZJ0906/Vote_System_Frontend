@@ -186,7 +186,13 @@ const registerForm = reactive({
 
 // ==================== 處理登入 ====================
 const handleLogin = async () => {
-  if (!loginForm.email || !loginForm.password) return
+  if (!loginForm.email || !loginForm.password) {
+    Swal.fire({
+      icon:"warning",
+      title:"缺少帳號或密碼"
+    })
+    return
+  }
 
   try {
     loading.value = true

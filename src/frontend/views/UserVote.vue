@@ -138,21 +138,21 @@ const initData = async () => {
   }
 }
 
-// 該題是否投過（整題鎖定）
+
 const hasVotedQuestion = (questionId) =>
   userHistory.value.some(h => Number(h.questionId) === Number(questionId))
 
-// 某個 item 是否已投過（顯示勾選狀態用）
+
 const isItemChecked = (itemId) =>
   userHistory.value.some(h =>
     h.items?.some(i => Number(i.itemId) === Number(itemId))
   )
 
-// 某個 item 是否被新勾選（尚未送出）
+
 const isItemSelected = (questionId, itemId) =>
   selectedItems.value[questionId]?.includes(itemId) ?? false
 
-// 切換勾選（已投過的題目不允許操作）
+
 const toggleSelect = (questionId, itemId) => {
   if (hasVotedQuestion(questionId)) return
   if (!selectedItems.value[questionId]) selectedItems.value[questionId] = []

@@ -54,7 +54,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-// 宣告路由與狀態倉庫
+
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -62,7 +62,7 @@ const authStore = useAuthStore()
 const isLoggedIn = computed(() => !!authStore.isLoggedIn)
 const username = computed(() => authStore.username)
 
-// 登出點擊事件
+// 登出
 const handleLogout = () => {
   authStore.clearAuth()
   router.push('/login')

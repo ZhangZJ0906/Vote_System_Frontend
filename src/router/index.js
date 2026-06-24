@@ -41,7 +41,7 @@ router.beforeEach((to, from) => {
   const isLoggedIn = authStore.isLoggedIn
   const userRole = authStore.role
 
-  // 1. 已登入的使用者想去登入頁 -> 依照角色重導向
+  // 已登入的使用者想去登入頁 -> 依照角色重導向
   if (to.meta.requiresGuest && isLoggedIn) {
     return userRole === 'admin' ? '/admin' : '/vote'
   }
@@ -51,9 +51,9 @@ router.beforeEach((to, from) => {
     return '/login'
   }
 
-  // 3. 檢查角色權限
+  //  檢查角色權限
   if (to.meta.roles && !to.meta.roles.includes(userRole)) {
-    // 如果角色不符合，被擋下來後要導向哪裡
+    
     return userRole === 'admin' ? '/admin' : '/vote'
   }
 
